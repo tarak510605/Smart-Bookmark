@@ -33,38 +33,37 @@ export default function DashboardClient({
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'bookmarks',
-          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Realtime INSERT received:', payload)
-          const newBookmark = payload.new as Bookmark
-          setBookmarks((prev) => {
-            // Check if bookmark already exists to avoid duplicates
-            if (prev.some((b) => b.id === newBookmark.id)) {
-              console.log('Bookmark already exists, skipping')
-              return prev
+          console.log('Realtime event received:', payload.eventType, payload)
+          
+          if (payload.eventType === 'INSERT') {
+            const newBookmark = payload.new as Bookmark
+            // Only process if it's for this user
+            if (newBookmark.user_id === userId) {
+              setBookmarks((prev) => {
+                if (prev.some((b) => b.id === newBookmark.id)) {
+                  console.log('Bookmark already exists, skipping')
+                  return prev
+                }
+                console.log('Adding new bookmark via realtime')
+                return [newBookmark, ...prev]
+              })
             }
-            console.log('Adding new bookmark to list via realtime')
-            return [newBookmark, ...prev]
-          })
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'bookmarks',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Realtime DELETE received:', payload)
-          const deletedId = payload.old.id as string
-          console.log('Removing bookmark via realtime:', deletedId)
-          setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== deletedId))
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = payload.old.id as string
+            console.log('DELETE event received for id:', deletedId)
+            console.log('payload.old data:', payload.old)
+            // Remove the bookmark (it's already filtered by RLS on the server)
+            setBookmarks((prev) => {
+              const filtered = prev.filter((bookmark) => bookmark.id !== deletedId)
+              console.log('Filtered bookmarks, removed:', prev.length - filtered.length)
+              return filtered
+            })
+          }
         }
       )
       .subscribe((status, err) => {

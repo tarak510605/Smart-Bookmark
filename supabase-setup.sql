@@ -52,6 +52,10 @@ USING (auth.uid() = user_id);
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.bookmarks;
 
+-- Set replica identity to FULL so DELETE events include all columns
+-- This is needed for real-time DELETE subscriptions to work properly
+ALTER TABLE public.bookmarks REPLICA IDENTITY FULL;
+
 -- ================================================
 -- VERIFICATION QUERIES (Optional - for testing)
 -- ================================================
