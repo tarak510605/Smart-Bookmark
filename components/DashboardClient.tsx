@@ -25,8 +25,11 @@ export default function DashboardClient({
     // Subscribe to realtime changes
     console.log('Setting up real-time subscription for user:', userId)
     
+    // Create unique channel name to avoid conflicts between tabs
+    const channelName = `bookmarks-${userId}-${Date.now()}`
+    
     const channel = supabase
-      .channel('bookmarks-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -36,7 +39,7 @@ export default function DashboardClient({
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Realtime INSERT:', payload)
+          console.log('Realtime INSERT received:', payload)
           const newBookmark = payload.new as Bookmark
           setBookmarks((prev) => {
             // Check if bookmark already exists to avoid duplicates
@@ -44,7 +47,7 @@ export default function DashboardClient({
               console.log('Bookmark already exists, skipping')
               return prev
             }
-            console.log('Adding new bookmark to list')
+            console.log('Adding new bookmark to list via realtime')
             return [newBookmark, ...prev]
           })
         }
@@ -58,13 +61,20 @@ export default function DashboardClient({
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Realtime DELETE:', payload)
+          console.log('Realtime DELETE received:', payload)
           const deletedId = payload.old.id as string
+          console.log('Removing bookmark via realtime:', deletedId)
           setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== deletedId))
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, err) => {
         console.log('Real-time subscription status:', status)
+        if (err) {
+          console.error('Real-time subscription error:', err)
+        }
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to real-time updates')
+        }
       })
 
     // Cleanup subscription on unmount
