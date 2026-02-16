@@ -1,0 +1,56 @@
+smart-bookmark-app/
+│
+├── app/                                # Next.js 14 App Router
+│   ├── auth/
+│   │   └── callback/
+│   │       └── route.ts               # OAuth callback handler
+│   ├── dashboard/
+│   │   └── page.tsx                   # Protected dashboard (Server Component)
+│   ├── login/
+│   │   └── page.tsx                   # Login page (Server Component)
+│   ├── layout.tsx                     # Root layout with metadata
+│   ├── page.tsx                       # Home page (redirects)
+│   └── globals.css                    # Global Tailwind styles
+│
+├── components/                         # React Components
+│   ├── AddBookmarkForm.tsx            # Form to add bookmarks (Client)
+│   ├── BookmarkList.tsx               # Display and manage bookmarks (Client)
+│   ├── DashboardClient.tsx            # Dashboard with real-time (Client)
+│   ├── GoogleSignInButton.tsx         # Google OAuth button (Client)
+│   └── LogoutButton.tsx               # Logout functionality (Client)
+│
+├── lib/                               # Utilities and Types
+│   ├── supabase/
+│   │   ├── client.ts                  # Browser Supabase client
+│   │   ├── server.ts                  # Server Supabase client
+│   │   └── middleware.ts              # Middleware helper for auth
+│   └── types/
+│       └── database.ts                # TypeScript database types
+│
+├── middleware.ts                      # Next.js middleware (session refresh)
+├── supabase-setup.sql                 # Complete database setup script
+│
+├── .env.example                       # Environment variables template
+├── .gitignore                         # Git ignore rules
+├── next.config.js                     # Next.js configuration
+├── package.json                       # Dependencies
+├── postcss.config.js                  # PostCSS configuration
+├── tailwind.config.ts                 # Tailwind CSS configuration
+├── tsconfig.json                      # TypeScript configuration
+│
+├── README.md                          # Complete documentation
+└── SETUP.md                           # Quick setup guide
+
+---
+
+Total Files: 28
+
+Key Technologies:
+- Next.js 14 (App Router)
+- TypeScript
+- Supabase (Auth, Database, Realtime)
+- Tailwind CSS
+- Google OAuth
+
+Server Components: app/page.tsx, app/login/page.tsx, app/dashboard/page.tsx
+Client Components: All components in /components directory
