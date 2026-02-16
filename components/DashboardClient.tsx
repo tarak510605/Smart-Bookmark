@@ -58,13 +58,22 @@ export default function DashboardClient({
           event: 'DELETE',
           schema: 'public',
           table: 'bookmarks',
-          filter: `user_id=eq.${userId}`,
+          // filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           console.log('Realtime DELETE received:', payload)
           const deletedId = payload.old.id as string
-          console.log('Removing bookmark via realtime:', deletedId)
-          setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== deletedId))
+          // console.log('Removing bookmark via realtime:', deletedId)
+          // setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== deletedId))
+          const deletedUserId = payload.old.user_id as string
+          
+          // Only process if it's for the current user
+          if (deletedUserId === userId) {
+            console.log('Removing bookmark via realtime:', deletedId)
+            setBookmarks((prev) => prev.filter((bookmark) => bookmark.id !== deletedId))
+          } else {
+            console.log('DELETE event for different user, ignoring')
+          }
         }
       )
       .subscribe((status, err) => {
