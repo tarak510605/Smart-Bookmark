@@ -17,7 +17,35 @@ A production-ready, real-time bookmark manager built with Next.js 14, TypeScript
 - Supabase (Auth, Database, Realtime)
 - Tailwind CSS
 
-## 🚦 Quick Start
+## � Challenges & Solutions
+
+During development, I encountered several technical challenges that required careful debugging and architectural decisions:
+
+### 1. Real-time DELETE Events Missing User Context
+
+**Problem:** DELETE events from Supabase Realtime were inconsistent across different machines. Sometimes the DELETE payload would not include the user ID, making it impossible to filter events properly on the client side. This caused bookmarks to disappear in tabs where they shouldn't, or fail to sync deletions between sessions.
+
+**Solution:** Configured PostgreSQL to use REPLICA IDENTITY FULL on the bookmarks table. This ensures DELETE events include the complete old row payload, allowing reliable client-side filtering. By default, PostgreSQL only includes the primary key in DELETE events, which wasn't sufficient for our multi-user filtering logic.
+
+---
+
+### 2. Multiple Tabs Creating Channel Conflicts
+
+**Problem:** When opening multiple browser tabs, the real-time subscriptions would conflict or fail to sync properly. Sometimes only one tab would receive updates, or tabs would interfere with each other's subscriptions.
+
+**Solution:** Generated a unique channel name for each tab by combining the user ID with a timestamp. This ensures each browser tab maintains its own independent real-time subscription, preventing channel name collisions and allowing proper multi-tab synchronization.
+
+---
+
+### 3. TypeScript Type Errors with Supabase Insert
+
+**Problem:** TypeScript compiler threw errors when calling the insert operation on the bookmarks table, particularly around return types and method chaining requirements.
+
+**Solution:** Used type assertion for the insert operation and properly chained the select and single methods to get the inserted row back from the database. This approach satisfied TypeScript's type checking while maintaining the functionality needed for optimistic UI updates.
+
+---
+
+## �🚦 Quick Start
 
 ### Prerequisites
 
